@@ -50,7 +50,6 @@ type
   end;
   PBranchPageElement = ^TBranchPageElement;
 
-// leafPageElement represents a node on a leaf page.
   TLeafPageElement = record
     flags : cardinal;
     pos   : cardinal;
@@ -64,6 +63,7 @@ type
     sequence : int64; // monotonically incrementing, used by NextSequence()
   end;
 
+  PMeta = ^TMeta;
   TMeta = record
 	  magic    : cardinal;
 	  version  : cardinal;
@@ -91,6 +91,7 @@ type
 	  cache   : TQHashSet;          // fast lookup of all free and pending page ids.
   public
     constructor Create;
+    destructor Destroy; override;
   end;
 
 // Bucket represents a collection of key/value pairs inside the database.
@@ -114,7 +115,7 @@ type
 	  FillPercent : double;
   end;
 
-  TxStats = record
+  TtxStats = record
 	  // Page statistics.
 	  PageCount : integer; // number of page allocations
 	  PageAlloc : integer; // total bytes allocated
@@ -140,9 +141,20 @@ type
 	  WriteTime : TMonotime; // total time spent writing to disk
   end;
 
+  TCommitHandler = procedure;
 
   TTx = class
   private
+    writable       : boolean;
+    managed        : boolean;
+    db             : TDB;
+	  meta           : PMeta;
+	  root           : TBucket;
+	  pages          : TQPtrHash; //map[pgid]*page
+	  stats          : TtxStats;
+	  commitHandlers : array of TCommitHandler;
+  public
+    WriteFlag : integer;
   end;
 
 function PageType(p: PPage): string;
@@ -202,6 +214,23 @@ begin
     result := 'freelist'
   else
     result := Format('unknown<%02x>', [d^.flags])
+end;
+
+{ TFreelist }
+
+constructor TFreelist.Create;
+begin
+  allocs  := TQQHash.Create;
+  pending := TQHash.Create(false);
+  cache   := TQHashSet.Create;
+end;
+
+destructor TFreelist.Destroy;
+begin
+  allocs.Free;
+  pending.Free;
+  cache.Free;
+  inherited Destroy;
 end;
 
 end.
