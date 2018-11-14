@@ -49,6 +49,8 @@ type
     pgid  : pgid;
   end;
   PBranchPageElement = ^TBranchPageElement;
+  TBranchPageElementArray = array [0..0] of TBranchPageElement;
+  PBranchPageElementArray = ^TBranchPageElementArray;
 
   TLeafPageElement = record
     flags : cardinal;
@@ -57,6 +59,8 @@ type
     vsize : cardinal;
   end;
   PLeafPageElement = ^TLeafPageElement;
+  TLeafPageElementArray = array [0..0] of TLeafPageElement;
+  PLeafPageElementArray = ^TLeafPageElementArray;
 
   TBucketRec = record
     root     : pgid;   // page id of the bucket's root-level page
