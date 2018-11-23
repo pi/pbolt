@@ -8,7 +8,7 @@ uses
   {$ENDIF}{$ENDIF}
   Classes, SysUtils, CustApp
   { you can add units after this }
-  , bolt;
+  , bolt, bolt_impl;
 
 type
 
@@ -43,8 +43,6 @@ begin
     Terminate;
     Exit;
   end;
-
-  writeln(sizeof(branchPageElement));
 
   { add your program here }
 
